@@ -9,7 +9,7 @@
       </div>
       
       <!-- QuickTools - 修复点击跳转功能 -->
-      <div class="p-6 border rounded-xl shadow hover:shadow-lg transition cursor-pointer" @click="goToLink('https://nav.quickso.top')">
+      <div class="p-6 border rounded-xl shadow hover:shadow-lg transition cursor-pointer" @click="goToLink('https://tools.quickso.top')">
         <h4 class="text-2xl font-bold mb-4">⚡ QuickTools</h4>
         <p class="mb-6 text-gray-600">常用在线工具聚合，快捷直达。</p>
       </div>
