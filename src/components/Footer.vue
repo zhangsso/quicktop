@@ -6,6 +6,6 @@
       <a href="#about" class="hover:text-quickYellow">关于</a>
       <a href="#newsletter" class="hover:text-quickYellow">订阅</a>
     </nav>
-    <p class="text-xs text-gray-400">© 2025 Quickso.top</p>
+    <p class="text-xs text-gray-400">© 2025 quickso.top</p>
   </footer>
 </template>
