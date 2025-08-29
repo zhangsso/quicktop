@@ -1,6 +1,6 @@
 <template>
   <section id="about" class="py-16 px-8 text-center bg-quickGray">
-    <h3 class="text-3xl font-bold mb-8">为什么选择 Quickso?</h3>
+    <h3 class="text-3xl font-bold mb-8">为什么选择 QuickSo?</h3>
     <div class="grid md:grid-cols-3 gap-6">
       <div>
         <h4 class="text-xl font-semibold mb-2">⏱ 快速启动</h4>

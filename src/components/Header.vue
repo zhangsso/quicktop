@@ -1,6 +1,6 @@
 <template>
   <header class="flex justify-between items-center px-8 py-4 bg-white shadow">
-    <h1 class="text-2xl font-bold text-quickYellow">⚡ Quickso</h1>
+    <img src="/img/top.png" alt="Logo" class="h-20" />
     <nav class="hidden md:flex gap-6 text-lg">
       <a href="#products" class="hover:text-quickYellow">产品</a>
       <a href="#about" class="hover:text-quickYellow">关于</a>

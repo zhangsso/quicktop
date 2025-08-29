@@ -23,7 +23,7 @@
         <!-- 二维码展示区域 - 悬浮在卡片上方 -->
         <div v-if="showQRCode" class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-10">
           <div class="bg-white p-4 rounded-lg shadow-xl border flex flex-col items-center">
-            <img src="/quickhabit.png" class="w-32 h-32 object-contain"/>
+            <img src="/img/quickhabit.png" class="w-32 h-32 object-contain"/>
             <p class="mb-6 text-gray-600">扫码体验</p>
           </div>
         </div>
