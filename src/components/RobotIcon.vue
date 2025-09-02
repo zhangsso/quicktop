@@ -71,10 +71,13 @@
         <rect x="88" y="120" width="64" height="60" rx="20" fill="url(#bodyGrad)" stroke="#d8dee6" />
         <circle cx="120" cy="150" r="20" fill="url(#coreRadial)" />
         <circle id="coreGlow" cx="120" cy="150" r="20" fill="url(#blueGrad)" opacity=".3" filter="url(#glow)" />
-        <g transform="translate(120,150)">
-          <circle r="12" fill="none" stroke="#fff" stroke-width="6" />
-          <path d="M6,8 L10,12" stroke="#fff" stroke-width="6" stroke-linecap="round" />
-        </g>
+        <!-- 闪电图标，替换原来的Q图标 -->
+        <path
+          d="M 120,138 L 110,150 L 116,151 L 109,164 L 129,150 L 120,149 L 127,138 Z"
+          fill="#ffd100"
+          stroke="#ffffff"
+          stroke-width="1"
+        />
       </g>
 
       <!-- Arms -->

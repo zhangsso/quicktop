@@ -144,17 +144,17 @@ export default {
     document.removeEventListener('touchend', this.stopDrag)
   },
   methods: {
-     handleRobotClick(event) {
-      // 阻止冒泡，避免重复触发 openChat
-      event.stopPropagation()
-      // 调用 RobotIcon 的方法改变眼睛颜色
+     handleRobotClick() {
+      // 简化方法，不使用事件参数，只改变眼睛颜色
+      // 这样在本地和Vercel都能正常工作
       this.$refs.robotIconComponent.setCyanState(true)
+      
+      // 防止冒泡的另一种方式，通过返回false
+      return false;
     },
     handleClick() {
       if (this.isDragging) return
       this.isChatOpen = true
-      // 可选：同步眼睛状态
-      // this.$refs.robotIconComponent.setCyanState(true)
     },
     closeChat() {
       this.isChatOpen = false
