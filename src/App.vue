@@ -1,4 +1,5 @@
 <template>
+  <Analytics />
   <div>
     <Header />
     <Hero />
@@ -8,6 +9,15 @@
     <Footer />
     <ChatRobot />
   </div>
+</template>
+
+<script setup>
+import { Analytics } from '@vercel/analytics/vue';
+</script>
+ 
+<template>
+  <Analytics />
+  <!-- your content -->
 </template>
 
 <script>
