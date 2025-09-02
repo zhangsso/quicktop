@@ -14,11 +14,6 @@
 <script setup>
 import { Analytics } from '@vercel/analytics/vue';
 </script>
- 
-<template>
-  <Analytics />
-  <!-- your content -->
-</template>
 
 <script>
 import Header from './components/Header.vue'
