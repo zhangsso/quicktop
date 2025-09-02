@@ -5,7 +5,13 @@ module.exports = {
       colors: {
         quickYellow: "#FFD600",
         quickBlack: "#1E1E1E",
-        quickGray: "#FAFAFA"
+        quickGray: "#FAFAFA",
+      },
+       width: {
+        '10': '40px', // 添加 w-10 对应 40px
+      },
+      height: {
+        '10': '40px', // 添加 h-10 对应 40px
       }
     }
   },
