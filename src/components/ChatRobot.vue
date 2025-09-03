@@ -312,7 +312,7 @@ export default {
       this.limitChatHistory();
       
       try {
-        const response = await fetch('/api/chat/stream', {
+        const response = await fetch('https://api.quickso.top/api/chat/stream', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
