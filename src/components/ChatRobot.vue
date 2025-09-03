@@ -65,7 +65,14 @@
                 'bg-blue-500 text-white rounded-tr-none' : 
                 'bg-white text-gray-700 rounded-tl-none border border-gray-200'"
             >
-              <div class="text-sm">{{ message.text }}</div>
+              <div class="text-sm">
+                {{ message.text }}
+                <span v-if="message.isGenerating" class="typing-indicator">
+                  <span class="dot"></span>
+                  <span class="dot"></span>
+                  <span class="dot"></span>
+                </span>
+              </div>
               <div class="text-xs mt-1" :class="message.isUser ? 'text-blue-100' : 'text-gray-400'">
                 {{ formatTime(message.timestamp) }}
               </div>
@@ -117,13 +124,21 @@ export default {
       messages: [
         {
           id: 1,
-          text: "您好！我是AI助手，有什么可以帮助您的吗？",
+          text: "您好！我是小Q，有什么可以帮助您的吗？",
           isUser: false,
           timestamp: new Date()
         }
       ],
       inputMessage: "",
-      isSending: false
+      isSending: false,
+      // 用于存储对话历史
+      chatHistory: [],
+      // 用于存储当前正在生成的消息
+      currentGeneratingMessage: "",
+      // 用于存储流式响应的控制器，以便于取消请求
+      controller: null,
+      // AI最大上下文长度限制（token数）
+      maxContextLength: 131072 // 128K tokens
     }
   },
   mounted() {
@@ -135,6 +150,16 @@ export default {
     document.addEventListener('mouseup', this.stopDrag)
     document.addEventListener('touchmove', this.onDrag)
     document.addEventListener('touchend', this.stopDrag)
+
+    // 初始化聊天历史
+    this.chatHistory = [
+      {
+        role: "assistant",
+        content: "您好！我是小Q，有什么可以帮助您的吗？"
+      }
+    ]
+    // 限制聊天历史长度
+    this.limitChatHistory();
   },
   beforeUnmount() {
     // 清理事件
@@ -142,9 +167,14 @@ export default {
     document.removeEventListener('mouseup', this.stopDrag)
     document.removeEventListener('touchmove', this.onDrag)
     document.removeEventListener('touchend', this.stopDrag)
+
+    // 如果有正在进行的请求，取消它
+    if (this.controller) {
+      this.controller.abort();
+    }
   },
   methods: {
-     handleRobotClick() {
+    handleRobotClick() {
       // 简化方法，不使用事件参数，只改变眼睛颜色
       // 这样在本地和Vercel都能正常工作
       this.$refs.robotIconComponent.setCyanState(true)
@@ -194,8 +224,8 @@ export default {
       this.isDragging = false
     },
     
-    // 新增聊天相关方法
-    sendMessage() {
+    // 修改聊天相关方法
+    async sendMessage() {
       if (!this.inputMessage.trim() || this.isSending) return;
       
       // 添加用户消息
@@ -207,6 +237,13 @@ export default {
       };
       this.messages.push(userMessage);
       
+      // 更新聊天历史
+      this.chatHistory.push({
+        role: "user",
+        content: this.inputMessage
+      });
+      this.limitChatHistory();
+      
       // 清空输入框
       const userMessageText = this.inputMessage;
       this.inputMessage = "";
@@ -214,52 +251,155 @@ export default {
       // 设置发送状态
       this.isSending = true;
       
-      // 模拟AI回复延迟
-      setTimeout(() => {
-        this.generateAIResponse(userMessageText);
-        this.isSending = false;
-        // 滚动到底部
-        this.$nextTick(() => {
-          const chatBody = document.querySelector('.chat-body');
-          if (chatBody) {
-            chatBody.scrollTop = chatBody.scrollHeight;
-          }
-        });
-      }, 1000);
-    },
-    
-    generateAIResponse(userMessage) {
-      // 模拟AI回复，从预设回复中随机选择
-      const responses = [
-        "感谢您的提问！这是一个很好的问题。",
-        "我理解您的需求，让我为您提供更多信息。",
-        "根据我的分析，您可以尝试以下解决方案...",
-        "这是一个常见的问题，很多用户都遇到过。",
-        "我建议您可以参考我们的文档获取更多详细信息。",
-        "您的反馈对我们很重要，我们会持续改进。",
-        "这个问题涉及到多个方面，让我详细为您解答。",
-        "很高兴为您服务！如果您还有其他问题，请随时提问。",
-        "根据您提供的信息，我认为可能的原因是...",
-        "我们有专门的教程可以帮助您解决这个问题。",
-        "这是一个技术性问题，让我为您提供专业的解答。",
-        "感谢您使用我们的服务，希望您有良好的体验。",
-        "您的问题我已经记录下来，会尽快给您更详细的回复。",
-        "这个问题我们之前处理过类似的案例，解决方案是...",
-        "为了更好地帮助您，您可以提供更多的信息吗？"
-      ];
-      
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-      
+      // 创建一个占位AI消息
+      const aiMessageId = this.messages.length + 1;
+      this.currentGeneratingMessage = "";
       const aiMessage = {
-        id: this.messages.length + 1,
-        text: randomResponse,
+        id: aiMessageId,
+        text: this.currentGeneratingMessage,
         isUser: false,
-        timestamp: new Date()
+        timestamp: new Date(),
+        isGenerating: true // 标记为正在生成中
       };
-      
       this.messages.push(aiMessage);
+      
+      // 滚动到底部
+      this.$nextTick(() => {
+        this.scrollToBottom();
+      });
+      
+      // 调用AI接口获取流式响应
+      try {
+        await this.fetchAIStreamResponse(aiMessageId);
+      } catch (error) {
+        console.error('获取AI响应出错:', error);
+        
+        // 更新消息为错误状态
+        const messageIndex = this.messages.findIndex(m => m.id === aiMessageId);
+        if (messageIndex !== -1) {
+          this.messages[messageIndex].text = "抱歉，我遇到了一些问题，请稍后再试。";
+          this.messages[messageIndex].isError = true;
+          this.messages[messageIndex].isGenerating = false;
+        }
+      } finally {
+        // 无论成功与否，都设置发送状态为false
+        this.isSending = false;
+      }
     },
     
+    // 限制聊天历史记录长度，防止超出AI上下文限制
+    limitChatHistory() {
+      // 计算当前聊天历史的总字符数
+      let totalChars = this.chatHistory.reduce((sum, msg) => sum + (msg.content ? msg.content.length : 0), 0);
+      
+      // 如果总字符数超过了最大上下文长度的某个比例（例如80%），则开始删除旧的消息
+      const maxChars = this.maxContextLength * 0.8; // 使用80%作为安全边界
+      
+      while (totalChars > maxChars && this.chatHistory.length > 2) {
+        // 保留第一条欢迎消息，从第二条开始删除
+        const removedMsg = this.chatHistory.splice(1, 1)[0];
+        totalChars -= removedMsg.content ? removedMsg.content.length : 0;
+      }
+    },
+    
+    // 调用API获取流式响应
+    async fetchAIStreamResponse(messageId) {
+      // 创建一个AbortController，用于取消请求
+      this.controller = new AbortController();
+      const signal = this.controller.signal;
+      
+      // 限制聊天历史记录长度
+      this.limitChatHistory();
+      
+      try {
+        const response = await fetch('/api/chat/stream', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(this.chatHistory),
+          signal // 传递信号，以便可以取消请求
+        });
+        
+        if (!response.ok) {
+          throw new Error(`API请求失败: ${response.status}`);
+        }
+        
+        // 获取响应的reader
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        
+        // 创建一个新的消息对象
+        let completeResponse = '';
+        
+        // 使用无限循环读取流数据
+        while (true) {
+          // 检查是否被取消
+          if (signal.aborted) {
+            break;
+          }
+          
+          // 读取一个数据块
+          const { done, value } = await reader.read();
+          
+          // 如果done为true，表示流已经结束
+          if (done) {
+            break;
+          }
+          
+          // 解码数据并添加到响应中
+          const chunk = decoder.decode(value, { stream: true });
+          completeResponse += chunk;
+          
+          // 更新当前生成的消息
+          const messageIndex = this.messages.findIndex(m => m.id === messageId);
+          if (messageIndex !== -1) {
+            this.messages[messageIndex].text = completeResponse;
+          }
+          
+          // 滚动到底部
+          this.scrollToBottom();
+        }
+        
+        // 更新聊天历史
+        if (completeResponse) {
+          this.chatHistory.push({
+            role: "assistant",
+            content: completeResponse
+          });
+          
+          // 限制聊天历史长度
+          this.limitChatHistory();
+          
+          // 更新消息状态
+          const messageIndex = this.messages.findIndex(m => m.id === messageId);
+          if (messageIndex !== -1) {
+            this.messages[messageIndex].isGenerating = false;
+          }
+        }
+        
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          console.log('请求被取消');
+        } else {
+          throw error;
+        }
+      } finally {
+        this.controller = null;
+      }
+    },
+    
+    // 滚动到底部
+    scrollToBottom() {
+      this.$nextTick(() => {
+        const chatBody = document.querySelector('.chat-body');
+        if (chatBody) {
+          chatBody.scrollTop = chatBody.scrollHeight;
+        }
+      });
+    },
+    
+    // 格式化时间
     formatTime(date) {
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
@@ -302,5 +442,35 @@ export default {
 
 .chat-body > div:last-child {
   margin-bottom: 0;
+}
+
+/* 输入指示器动画 */
+.typing-indicator {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 5px;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  margin: 0 1px;
+  background-color: currentColor;
+  border-radius: 50%;
+  opacity: 0.6;
+  animation: typing 1.5s infinite ease-in-out;
+}
+
+.dot:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+.dot:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+@keyframes typing {
+  0%, 100% { transform: translateY(0px); opacity: 0.6; }
+  50% { transform: translateY(-2px); opacity: 1; }
 }
 </style>
