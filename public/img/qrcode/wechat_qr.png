@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200px" height="200px" viewBox="0 0 200 200" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <rect fill="#ffffff" width="200" height="200"></rect>
+    <rect fill="#000000" x="20" y="20" width="40" height="40"></rect>
+    <rect fill="#000000" x="80" y="20" width="40" height="40"></rect>
+    <rect fill="#000000" x="140" y="20" width="40" height="40"></rect>
+    <rect fill="#000000" x="20" y="80" width="40" height="40"></rect>
+    <rect fill="#000000" x="80" y="80" width="40" height="40"></rect>
+    <rect fill="#000000" x="140" y="80" width="40" height="40"></rect>
+    <rect fill="#000000" x="20" y="140" width="40" height="40"></rect>
+    <rect fill="#000000" x="80" y="140" width="40" height="40"></rect>
+    <rect fill="#000000" x="140" y="140" width="40" height="40"></rect>
+    <text x="100" y="110" font-family="Arial" font-size="20" text-anchor="middle" fill="#000000">二维码占位符</text>
+</svg>

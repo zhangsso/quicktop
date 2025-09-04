@@ -8,6 +8,7 @@
     <Newsletter />
     <Footer />
     <ChatRobot />
+    <ContactSidebar />
   </div>
 </template>
 
@@ -23,8 +24,9 @@ import About from './components/About.vue'
 import Newsletter from './components/Newsletter.vue'
 import Footer from './components/Footer.vue'
 import ChatRobot from './components/ChatRobot.vue'
+import ContactSidebar from './components/ContactSidebar.vue'
 
 export default {
-  components: { Header, Hero, Products, About, Newsletter, Footer, ChatRobot }
+  components: { Header, Hero, Products, About, Newsletter, Footer, ChatRobot, ContactSidebar }
 }
 </script>

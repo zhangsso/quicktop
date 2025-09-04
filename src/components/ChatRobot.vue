@@ -85,7 +85,7 @@ export default {
   data() {
     return {
       isChatOpen: false,
-      robotPosition: 300,
+      robotPosition: 100,
       isDragging: false,
       startY: 0,
       startTop: 0,
@@ -105,7 +105,8 @@ export default {
     }
   },
   mounted() {
-    this.robotPosition = window.innerHeight / 2 - 40
+    // 将位置调整为屏幕垂直居中偏下
+    this.robotPosition = window.innerHeight / 2 + 400
     document.addEventListener('mousemove', this.onDrag)
     document.addEventListener('mouseup', this.stopDrag)
     document.addEventListener('touchmove', this.onDrag)

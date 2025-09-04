@@ -9,3 +9,7 @@
     <p class="text-xs text-gray-400">© 2025 quickso.top</p>
   </footer>
 </template>
+
+<script setup>
+// 页脚组件保持简洁，联系信息将移到侧边悬浮组件
+</script>
